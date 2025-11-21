@@ -1,204 +1,188 @@
-Predicción de Consumo de Cannabis – Proyecto de Machine Learning
+<div align="center">
 
-Este proyecto analiza un dataset real del repositorio UCI para predecir si una persona tiene mayor probabilidad de consumir cannabis.
-La predicción se basa en variables demográficas y rasgos de personalidad, utilizando distintos modelos de Machine Learning y una aplicación interactiva en Streamlit.
+# Predicción de Consumo de Cannabis  
+### Proyecto de Machine Learning con datos del UCI Machine Learning Repository
 
-1. Objetivos del proyecto
+---
 
-Analizar la relación entre perfil personal y consumo de cannabis.
+</div>
 
-Convertir el dataset original en un problema de clasificación binaria.
+## Índice
 
-Probar y comparar varios modelos de Machine Learning.
+1. [Descripción general](#descripción-general)  
+2. [Dataset](#dataset)  
+3. [Preparación de datos](#preparación-de-datos)  
+4. [Modelos y métricas](#modelos-y-métricas)  
+5. [Ajuste de hiperparámetros](#ajuste-de-hiperparámetros)  
+6. [Resultados principales](#resultados-principales)  
+7. [Aplicación en Streamlit](#aplicación-en-streamlit)  
+8. [Instalación](#instalación)  
+9. [Estructura del proyecto](#estructura-del-proyecto)  
+10. [Futuras mejoras](#futuras-mejoras)  
+11. [Licencia](#licencia)  
 
-Optimizar los modelos con ajuste de hiperparámetros.
+---
 
-Crear una aplicación interactiva que permita generar predicciones a partir de un perfil introducido por el usuario.
+## Descripción general
 
-2. Dataset
+Este proyecto desarrolla un modelo de **clasificación binaria** para estimar si una persona tiene mayor probabilidad de consumir cannabis a partir de:
 
-Fuente: UCI Machine Learning Repository – Drug Consumption (Quantified)
-Tamaño: ~1.900 participantes
+- Variables demográficas  
+- Rasgos de personalidad cuantificados  
 
-Variables utilizadas
+El trabajo incluye:
 
-Datos demográficos
+- Análisis y preparación del dataset  
+- Selección de variables de entrada (features)  
+- Comparación de varios algoritmos de Machine Learning  
+- Ajuste de hiperparámetros de los mejores modelos  
+- Desarrollo de una **aplicación interactiva** con Streamlit  
+- Una **presentación tipo diapositivas** también en Streamlit
 
-Edad
+---
 
-Género
+## Dataset
 
-Nivel educativo
+**Fuente**: UCI Machine Learning Repository  
+**Nombre original**: *Drug Consumption (Quantified)*  
+**Número aproximado de registros**: 1.900 personas
 
-País
+### Variables utilizadas
 
-Etnia
+**Demografía**
 
-Rasgos de personalidad
+- Edad  
+- Género  
+- Nivel educativo  
+- País  
+- Etnia  
 
-Neuroticismo (N)
+**Rasgos de personalidad (escala numérica)**
 
-Extraversión (E)
+- Neuroticismo (N)  
+- Extraversión (E)  
+- Apertura mental (O)  
+- Amabilidad (A)  
+- Responsabilidad / Escrupulosidad (C)  
+- Impulsividad (Imp)  
+- Búsqueda de sensaciones (SS)  
 
-Apertura mental (O)
+**Variable objetivo (target)**
 
-Amabilidad (A)
+Se transforma el consumo original de cannabis en una variable binaria:
 
-Responsabilidad / Escrupulosidad (C)
+- `0` → No consumidor (consumo nulo o muy esporádico)  
+- `1` → Consumidor (consumo más frecuente)
 
-Impulsividad (Imp)
+---
 
-Búsqueda de sensaciones (SS)
+## Preparación de datos
 
-Variable objetivo
+Principales pasos realizados:
 
-Transformación de la variable original de consumo de cannabis a binaria:
+1. **Limpieza básica**
+   - Eliminación de posibles duplicados  
+   - Revisión de tipos de datos y valores ausentes
 
-0 = No consumidor (CL0, CL1, CL2)
+2. **Construcción de la variable objetivo**
+   - Conversión del nivel de consumo de cannabis en una variable binaria (`cannabis_binary`)
 
-1 = Consumidor (CL3, CL4, CL5, CL6)
+3. **Selección de variables**
+   - Uso únicamente de:
+     - Variables demográficas  
+     - Rasgos de personalidad  
+   - Exclusión explícita del consumo de otras sustancias como predictor (el objetivo es basarse en el perfil, no en consumos previos)
 
-3. Preparación de datos
+4. **Normalización**
+   - Aplicada en los modelos sensibles a la escala (por ejemplo, KNN), para hacer comparables las magnitudes de las variables
 
-Eliminación de duplicados
+---
 
-Comprobación de tipos y consistencia
+## Modelos y métricas
 
-Transformación del target a formato binario
+Se entrenaron y compararon diferentes modelos de clasificación:
 
-Separación en variables predictoras (X) y variable objetivo (y)
+| Modelo                    | Tipo general                           |
+|---------------------------|----------------------------------------|
+| KNN                       | Vecinos más cercanos                   |
+| Regresión logística      | Modelo lineal probabilístico           |
+| Árbol de decisión         | Árbol de clasificación                 |
+| Bagging                   | Conjunto de árboles (bootstrap)       |
+| Random Forest            | Bosque aleatorio de árboles            |
+| AdaBoost                 | Ensamblado aditivo secuencial          |
+| Gradient Boosting        | Ensamblado aditivo con gradiente       |
 
-Normalización para modelos que lo requieren (como KNN)
+**Métricas utilizadas:**
 
-4. Modelos evaluados
+- **Accuracy**: porcentaje de aciertos totales  
+- **F1-score**: equilibrio entre precisión y exhaustividad, útil para asegurar un buen comportamiento tanto en consumidores como en no consumidores
 
-KNN
+---
 
-Regresión logística
+## Ajuste de hiperparámetros
 
-Árbol de decisión
+Tras la comparación inicial, se seleccionaron dos modelos para afinarlos:
 
-Bagging
+- **Random Forest**  
+- **Gradient Boosting**
 
-Random Forest
+Se evaluaron distintas combinaciones de hiperparámetros mediante búsqueda sistemática.
 
-AdaBoost
+### Hiperparámetros explorados
 
-Gradient Boosting
+**Random Forest**
 
-Métricas utilizadas
+- `n_estimators`: 100, 200, 300  
+- `max_depth`: 3, 5, 7, None  
+- `min_samples_split`: 2, 5, 10  
 
-Accuracy
+Combinaciones evaluadas:  
+`3 (n_estimators) × 4 (max_depth) × 3 (min_samples_split) = 36`
 
-F1-score
+**Gradient Boosting**
 
-Ambas métricas se usaron para garantizar un equilibrio entre predicción de consumidores y no consumidores.
+- `n_estimators`: 50, 100, 150  
+- `learning_rate`: 0.01, 0.05, 0.1  
+- `max_depth`: 2, 3, 4  
 
-5. Ajuste de hiperparámetros
+Combinaciones evaluadas:  
+`3 × 3 × 3 = 27`
 
-Los dos modelos con mejor rendimiento inicial fueron:
+**Total configuraciones probadas**:  
+`36 + 27 = 63`
 
-Random Forest
+### Efecto del ajuste
 
-Gradient Boosting
+- Mejora en **accuracy** de aproximadamente:
+  - Random Forest: +0,024  
+  - Gradient Boosting: +0,019  
+- Ligera mejora adicional en **F1-score**, indicando un mejor equilibrio entre ambas clases
 
-A ambos se les aplicó una búsqueda exhaustiva de hiperparámetros probando un total de 63 combinaciones.
+El modelo final con mejor rendimiento global fue **Gradient Boosting ajustado**.
 
-Ejemplos de parámetros probados:
+---
 
-Random Forest
+## Resultados principales
 
-n_estimators: 100, 200, 300
+- Los mejores modelos alcanzan una **accuracy superior al 83 %**.  
+- El **F1-score** indica que el modelo mantiene un buen equilibrio entre predicción de consumidores y no consumidores.  
+- Se observa que la combinación de variables de personalidad y datos demográficos aporta valor para la predicción.  
+- La preparación del objetivo y la correcta selección de variables tienen un impacto significativo en el rendimiento, incluso más que la complejidad del modelo.
 
-max_depth: 3, 5, 7, None
+---
 
-min_samples_split: 2, 5, 10
+## Aplicación en Streamlit
 
-Gradient Boosting
+El repositorio incluye:
 
-n_estimators: 50, 100, 150
+1. Una **aplicación interactiva** (`app.py`) donde el usuario puede:
+   - Introducir un perfil demográfico  
+   - Ajustar los rasgos de personalidad mediante controles deslizantes  
+   - Obtener una predicción y una probabilidad asociada
 
-learning_rate: 0.01, 0.05, 0.1
+2. Una **presentación interactiva** (`presentation.py`) que explica el proyecto en formato de diapositivas, también en Streamlit.
 
-max_depth: 2, 3, 4
+### Ejecutar la aplicación
 
-Mejora obtenida tras la optimización:
-
-Random Forest: +0.024 en accuracy
-
-Gradient Boosting: +0.019 en accuracy
-
-Ligera mejora adicional en F1-score
-
-El mejor modelo global fue el Gradient Boosting optimizado.
-
-6. Aplicación interactiva en Streamlit
-
-El proyecto incluye una aplicación que permite:
-
-Introducir un perfil demográfico
-
-Ajustar rasgos de personalidad mediante barras deslizantes
-
-Generar una predicción en tiempo real
-
-Mostrar probabilidad estimada y clasificación final
-
-Ejecutar la app:
+```bash
 streamlit run app.py
-
-Ejecutar la presentación:
-streamlit run presentation.py
-
-7. Estructura del proyecto
-proyecto-cannabis-ml/
-│
-├── app.py                 # Aplicación interactiva en Streamlit
-├── presentation.py        # Presentación del proyecto en modo diapositivas
-├── wrapper.py             # Funciones auxiliares (opcional)
-├── README.md
-└── requirements.txt       # Dependencias del proyecto
-
-8. Instalación
-
-Instalar dependencias:
-
-pip install -r requirements.txt
-
-
-Dependencias principales:
-
-streamlit
-
-pandas
-
-scikit-learn
-
-altair
-
-ucimlrepo
-
-9. Conclusiones
-
-Los datos demográficos y de personalidad permiten estimar con cierta fiabilidad el consumo de cannabis.
-
-Gradient Boosting optimizado fue el modelo más preciso y equilibrado.
-
-La definición del target y el uso adecuado de las features influyeron más en el rendimiento que la complejidad del modelo.
-
-10. Futuras mejoras
-
-Analizar grados de consumo en lugar de clasificación binaria.
-
-Añadir interpretabilidad mediante SHAP.
-
-Incorporar modelos adicionales para comparación.
-
-Analizar consumo conjunto de múltiples sustancias.
-
-Autor
-
-Elías Chafih Meddah
-Data & Business Intelligence Analyst
-LinkedIn: (añadir enlace)
-GitHub: (añadir enlace)
